@@ -2,4 +2,4 @@
 
 Add search to your website without server-side code or database.
 
-Read the documentation: [static-search](https://staticsearch.com)
+Visit the documentation website: [staticsearch.com](https://staticsearch.com)
