@@ -1,4 +1,4 @@
 # static-search
 
-Website search without server-side code or database.
+Search without server-side code or database.
 Visit the documentation website: [staticsearch.com](https://staticsearch.com)
