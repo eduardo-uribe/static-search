@@ -13,10 +13,11 @@
     </style>
 </head>
 <body>
-    <h1>static-search</h1>
 
     <static-search 
-        data-resource-url="./data/searchable-data.json"
+        data-search-index-resource-url="./data/searchable-data.json"
+        data-no-search-results-found-message="No search results found"
+        data-show-search-provided-by-message="true"
         data-search-results>
 
         <template id="static-search-form" shadowrootmode="open">
@@ -69,7 +70,7 @@
                     line-height: 1.5;
                 }
 
-                #static-search-results-logo {
+                #search-provided-by-message {
                     background-color: black;
                     color: white;
                     padding: 0.5rem;
@@ -77,7 +78,7 @@
                     bottom: 0;
                 }
 
-                #static-search-results-logo-link {
+                #search-provided-by-message-link {
                     color: white;
                 }
             </style>
