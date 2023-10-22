@@ -1,7 +1,9 @@
 class StaticSearch extends HTMLElement {
 
-    // fields:
+    // public class fields:
     logo = `<li id="static-search-results-logo">search by <a href="https://staticsearch.com" id="static-search-results-logo-link">staticsearch.com</a>.</li>`;
+
+    // initialize this variable in the connectedCallback() method
     noSearchResultsFoundMessage = `<li><p>Sorry, no search results found.</p></li>`;
 
     static get observedAttributes() { 
@@ -18,13 +20,14 @@ class StaticSearch extends HTMLElement {
         let url = this.getAttribute( "data-resource-url" );
 
 
-        // initialize & event listeners
+        // inits & event listeners
+        // initialize shadow dom
         if ( !this.shadowRoot ) {
 
             // shadow root
             let root = this.attachShadow( { mode: "open" } );
 
-            // insert the form template into the shadow dom
+            // insert static-search template into shadow dom
             let formTemplate = document.getElementById("static-search-form");
             let formTemplateHTML = formTemplate.content;
 
@@ -34,9 +37,9 @@ class StaticSearch extends HTMLElement {
 
 
         // question-to-oneself: @FIXME:
-        // should i store index data to indexeddb on load
-        // instead of waiting to a submit event is fired
-        // yes - refactor code
+        // should i store index data to indexeddb on class connectedCallback() invocation.
+        // instead of waiting to a submit event is fired.
+        // yes - refactor this process code.
 
         this.shadowRoot.addEventListener( "submit", async ( event ) => {
 
