@@ -1,17 +1,15 @@
 class StaticSearch extends HTMLElement {
 
-    // public class fields:
-    logo = `<li id="static-search-results-logo">search by <a href="https://staticsearch.com" id="static-search-results-logo-link">staticsearch.com</a>.</li>`;
-
-    // initialize this variable in the connectedCallback() method
-    noSearchResultsFoundMessage = `<li><p>Sorry, no search results found.</p></li>`;
-
     static get observedAttributes() { 
         return [ "data-search-results" ];
     }
 
     constructor() {
         super();
+
+        this.noSearchResultsFoundMessage =  this.getAttribute( "data-no-search-results-found-message" );
+
+        this.searchProvidedByMessage = "Search provided by staticsearch.com";
     }
 
     connectedCallback() {
@@ -21,8 +19,9 @@ class StaticSearch extends HTMLElement {
 
 
         // inits & event listeners
-        // initialize shadow dom
-        if ( !this.shadowRoot ) {
+
+        // initialize shadow dom if not already set
+        if ( this.shadowRoot === null ) {
 
             // shadow root
             let root = this.attachShadow( { mode: "open" } );
@@ -35,12 +34,6 @@ class StaticSearch extends HTMLElement {
             root.append( formTemplateHTML.cloneNode( true ) );
         }
 
-
-        // question-to-oneself: @FIXME:
-        // should i store index data to indexeddb on class connectedCallback() invocation.
-        // instead of waiting to a submit event is fired.
-        // yes - refactor this process code.
-
         this.shadowRoot.addEventListener( "submit", async ( event ) => {
 
             event.preventDefault();
@@ -48,10 +41,8 @@ class StaticSearch extends HTMLElement {
             // variables
             let root = this.shadowRoot;
 
-            // get the data to search
-
-            // get the data from indexeddb - basic pattern
-            // 1. open a database
+            // get search index from indexed db
+            // request to open database
             let openDatabaseRequest = indexedDB.open( "staticsearch", 1 );
             
 
@@ -77,7 +68,7 @@ class StaticSearch extends HTMLElement {
 
                 request.onsuccess = function( event ) {
 
-                    // search index data
+                    // the search index
                     let index = event.target.result;
 
                     // run search
@@ -85,7 +76,7 @@ class StaticSearch extends HTMLElement {
                     // search query
                     let query = root.querySelector( "input" ).value;
 
-                    // objects whose properties contain the query string
+                    // store objects whose properties contain the query string
                     let matches = index.filter( function( object ) {
 
                         for ( let property in object ) {
@@ -158,36 +149,46 @@ class StaticSearch extends HTMLElement {
             let ul = document.createElement( "ul" );
 
 
-            // add static-search logo to search results
-            ul.innerHTML =  this.logo;
+            // add search provided by message to search results
+            let providedBy = document.createElement( "li" );
+            providedBy.setAttribute( "id", "search-provided-by-message" );
+
+            let providedByMessage = document.createElement( "a" );
+            providedByMessage.setAttribute( "href", "https://staticsearch.com" );
+            providedByMessage.setAttribute( "id", "search-provided-by-message-link" );
+            providedByMessage.textContent = "Search provided by staticsearch.com";
+
+            providedBy.append( providedByMessage );
+            ul.append( providedBy );
 
 
-            // create the search results content container
+            // search results content container
             let content = document.createElement( "ul" );
 
-            // results list content
+            // list of results
             let list = searchResults.map( function( object ) {
 
                 return `<li><a href=${ object.url }>${ object.title }</a></li>`;;
 
             }, this ).join("");
 
-
-            // create no search results found content
             if ( list.length > 0 ) {
-
                 content.innerHTML = list;
-
             } else {
 
-                content.innerHTML = this.noSearchResultsFoundMessage;
+                // render no search results found message
+                let container = document.createElement( "li" );
+                let message = document.createElement( "p" );
+                message.textContent = `${ this.noSearchResultsFoundMessage }`;
+                container.append(message);
 
+                content.append( container );
             }
 
             ul.prepend( content );
 
             
-            // add search results container to the shadow dom
+            // render search results to the shadow dom
             this.shadowRoot.append( ul );
 
         }
