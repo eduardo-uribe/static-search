@@ -7,58 +7,51 @@ class StaticSearch extends HTMLElement {
   constructor() {
     super();
 
-    // default no search results found message
-    this.noSearchResultsFoundMessage = this.getAttribute(
-      'data-no-search-results-found-message'
+    // default message for no search results found
+    this.noSearchResultsMessage = this.getAttribute(
+      'data-no-search-results-message'
     );
 
-    // search provided by message
-    this.searchProvidedByMessage = 'Search by staticsearch.com';
-  }
+    this.attachShadow({ mode: 'open' });
 
-  /**
-   * connectedCallback
-   * Called each time the element is added to the document. The specification recommends that, as far as possible, developers should implement custom element setup in this callback rather than the constructor.
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Components/Using_custom_elements#custom_element_lifecycle_callbacks}
-   */
-  async connectedCallback() {
-    // url of the resource we want to fetch
-    let url = this.getAttribute('data-resource-url');
-
-    // index search data
-    let index = await this.readIndexDB(url);
-
-    // inits & event listeners
-
-    // initialize shadow dom if not already set
-    if (this.shadowRoot === null) {
-      // shadow root
-      let root = this.attachShadow({ mode: 'open' });
-
-      // insert static-search template into shadow dom
-      let formTemplate = document.getElementById('static-search-form');
-      let formTemplateHTML = formTemplate.content;
-
-      root.append(formTemplateHTML.cloneNode(true));
-    }
+    // this.shadowRoot.addEventListener('click', this.handleClick);
 
     // listen to search form submitions
-    this.shadowRoot.addEventListener('submit', (event) => {
-      // prevent default behavior
-      event.preventDefault();
+    this.shadowRoot.addEventListener('submit', this.formHandler);
+  }
 
-      // search form query
-      let query = this.shadowRoot.querySelector('input').value;
+  async connectedCallback() {
+    // url of the resource we want to fetch
+    // const url = this.getAttribute('data-resource-url');
+    // index search data
+    // const index = await this.readIndexDB(url);
+    // shadow root
 
-      // index data that matches the search query
-      let matches = this.searchForMatches(index, query);
+    // search proxy template
+    const searchProxyTemplate = document
+      .querySelector('template[data-search-proxy]')
+      .content.cloneNode(true);
 
-      // reassign the <static-search> attribute the matched data
-      this.shadowRoot.host.setAttribute(
-        'data-search-results',
-        JSON.stringify(matches)
-      );
-    });
+    // dialog template
+    const dialogTemplate = document
+      .querySelector('[data-dialog]')
+      .content.cloneNode(true);
+
+    // append template content into the shadow dom
+    this.shadowRoot.append(searchProxyTemplate, dialogTemplate);
+
+    // listen to clicks on the search proxy element
+    const searchProxy = this.shadowRoot.querySelector(
+      'search[data-search-proxy]'
+    );
+
+    // RELOCATE TO THE CONSTRUCTOR
+    const closeDialogButton =
+      this.shadowRoot.querySelector('[data-close-modal]');
+
+    // RELOCATE TO THE CONSTRUCTOR
+    searchProxy.addEventListener('click', this.openDialog);
+    closeDialogButton.addEventListener('click', this.closeDialog);
   }
 
   // respond to changes in an attribute's value
@@ -70,59 +63,12 @@ class StaticSearch extends HTMLElement {
    * @param {*} newValue - the attributes new value
    */
   attributeChangedCallback(name, oldValue, newValue) {
-    if (newValue) {
-      let searchResults = JSON.parse(newValue);
-
-      // get any previous search results container
-      let previousResults = this.shadowRoot.querySelector('ul');
-
-      // remove any previous search results
-      if (previousResults) {
-        this.shadowRoot.removeChild(previousResults);
-      }
-
-      // create the search results container
-      let ul = document.createElement('ul');
-
-      // add search provided by message to search results
-      let providedBy = document.createElement('li');
-      providedBy.setAttribute('id', 'search-provided-by-message');
-
-      let providedByMessage = document.createElement('a');
-      providedByMessage.setAttribute('href', 'https://staticsearch.com');
-      providedByMessage.setAttribute('id', 'search-provided-by-message-link');
-      providedByMessage.textContent = 'Search by staticsearch.com';
-
-      providedBy.append(providedByMessage);
-      ul.append(providedBy);
-
-      // search results content container
-      let content = document.createElement('ul');
-
-      // list of results
-      let list = searchResults
-        .map(function (object) {
-          return `<li><a href=${object.url}>${object.title}</a></li>`;
-        }, this)
-        .join('');
-
-      if (list.length > 0) {
-        content.innerHTML = list;
-      } else {
-        // render no search results found message
-        let container = document.createElement('li');
-        let message = document.createElement('p');
-        message.textContent = `${this.noSearchResultsFoundMessage}`;
-        container.append(message);
-
-        content.append(container);
-      }
-
-      ul.prepend(content);
-
-      // render search results to the shadow dom
-      this.shadowRoot.append(ul);
+    if (newValue === '') {
+      return;
     }
+
+    // render the search results
+    this.renderSearchResults(newValue);
   }
 
   searchForMatches(index, query) {
@@ -195,6 +141,82 @@ class StaticSearch extends HTMLElement {
         reject(event.target.errorCode);
       };
     });
+  }
+
+  formHandler = async (event) => {
+    // prevent default behavior
+    event.preventDefault();
+
+    // search form query
+    let query = this.shadowRoot.querySelector('[data-search-input]').value;
+
+    const url = this.getAttribute('data-resource-url');
+    const index = await this.readIndexDB(url);
+
+    // index data that matches the search query
+    let matches = this.searchForMatches(index, query);
+
+    // reassign the <static-search> attribute the matched data
+    this.shadowRoot.host.setAttribute(
+      'data-search-results',
+      JSON.stringify(matches)
+    );
+  };
+
+  openDialog = (event) => {
+    // open dialog
+    const dialog = this.shadowRoot.querySelector('dialog');
+    dialog.showModal();
+  };
+
+  closeDialog = (event) => {
+    // close dialog
+    const dialog = this.shadowRoot.querySelector('dialog');
+    dialog.close();
+  };
+
+  renderSearchResults = (newValue) => {
+    // parse json string into an array object
+    let searchResults = JSON.parse(newValue);
+
+    // get any previous search results container
+    let previousSearchResults = this.shadowRoot.querySelector('ul');
+
+    // remove any previous search results
+    if (previousSearchResults) {
+      previousSearchResults.remove();
+      // this.shadowRoot.removeChild(previousSearchResults);
+    }
+
+    // container for search results
+    let ul = document.createElement('ul');
+
+    // add search provided by message to search results
+    const searchProvidedBy = `<li id="search-provided-by-message"><a href="https://staticsearch.com" id="search-provided-by-message-link">Search by staticsearch.com</a></li>`;
+    ul.innerHTML = searchProvidedBy;
+
+    // search results unordered list
+    let content = document.createElement('ul');
+
+    // list of results
+    let list = searchResults.map(this.listItemTemplate, this).join('');
+
+    if (list.length > 0) {
+      content.innerHTML = list;
+    } else {
+      // render no search results found message
+      const message = `<li><p>${this.noSearchResultsFoundMessage}</p></li>`;
+      content.innerHTML = message;
+    }
+
+    ul.prepend(content);
+
+    // render search results to the shadow dom
+    this.shadowRoot.querySelector('[data-search]').append(ul);
+  };
+
+  listItemTemplate(object) {
+    return `<li><a href=${object.url}>${object.title}</a></li>`;
   }
 }
 

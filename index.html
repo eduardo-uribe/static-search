@@ -4,98 +4,114 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Search without server-side code or database.</title>
-
-    <style>
-      html,
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-          Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
-          sans-serif;
-        font-size: 16px;
-      }
-    </style>
   </head>
   <body>
-    <static-search
-      data-resource-url="./data/index.json"
-      data-no-search-results-found-message="No search results found"
-      data-show-search-provided-by-message="true"
-      data-search-results
-    >
-      <template id="static-search-form" shadowrootmode="open">
-        <style>
-          :host {
-            display: block;
-            font-size: 16px;
-          }
+    <template data-search-proxy>
+      <style></style>
+      <search data-search-proxy>
+        <input type="text" placeholder="Search this website" />
+        <button type="button">Search</button>
+      </search>
+    </template>
 
-          form {
-            display: flex;
-            justify-content: space-between;
-          }
+    <template data-dialog>
+      <style>
+        dialog {
+          border-radius: 6px;
+          border: solid 1px #eee;
+          width: 55ch;
+          margin-top: 10%;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+            sans-serif;
+        }
 
-          input {
-            border: 1px solid black;
-            border-radius: 2px;
-            width: 70%;
-            height: 50px;
-            text-indent: 0.5rem;
-          }
+        dialog::backdrop {
+          /* background-color: #efefef; */
+          backdrop-filter: blur(1px);
+        }
 
-          button {
-            background-color: black;
-            color: white;
-            border: none;
-            border-radius: 2px;
-            width: 29%;
-          }
+        ul {
+          /* border: solid 2px black; */
+          list-style: none;
+          /* line-height: 1.5; */
+          /* margin: 1rem 0 0; */
+          padding: 0;
+          margin-bottom: 0;
+        }
 
-          :host > ul {
-            border: 1px solid black;
-            border-radius: 2px;
-            list-style: none;
-            padding: 0.5rem 0 0;
-            max-height: 55vh;
-            overflow: scroll;
-          }
+        ul ul {
+          border: solid 1px black;
+          border-radius: 2px;
+          line-height: 1.5;
+          max-height: 350px;
+          overflow: scroll;
+          padding: 0.5rem;
+        }
 
-          :host ul ul {
-            padding-left: 25px;
-          }
+        #search-provided-by-message {
+          margin-top: 0.5rem;
+          text-align: end;
+        }
 
-          :host ul ul li {
-            margin-bottom: 0.75rem;
-          }
+        section {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 24px;
+        }
 
-          :host ul ul li a {
-            line-height: 1.5;
-          }
+        section h3 {
+          font-size: 16px;
+          font-weight: 400;
+          margin: 0;
+        }
 
-          #search-provided-by-message {
-            background-color: rgb(6, 6, 6);
-            color: white;
-            padding: 0.5rem;
-            position: sticky;
-            bottom: 0;
-          }
+        button[data-close-modal] {
+          border: none;
+          background: none;
+          cursor: pointer;
+          text-decoration: underline;
+        }
 
-          #search-provided-by-message-link {
-            color: white;
-          }
-        </style>
+        form {
+          display: flex;
+          justify-content: space-between;
+          height: 50px;
+        }
 
-        <form role="search">
-          <input
-            type="search"
-            placeholder="Search this website"
-            required
-            aria-label="Search throught this websites content."
-          />
-          <button>Search</button>
-        </form>
-      </template>
-    </static-search>
+        form input {
+          width: 80%;
+          text-indent: 8px;
+        }
 
-    <script type="module" src="static-search.js"></script>
+        form button {
+          width: 18%;
+          font-size: 14px;
+        }
+      </style>
+      <dialog>
+        <search data-search>
+          <section>
+            <h3>Search this website</h3>
+            <button data-close-modal type="button">Close</button>
+          </section>
+          <form>
+            <input
+              autofocus
+              type="search"
+              placeholder="Search this website"
+              required
+              aria-label="Search throught this websites content."
+              data-search-input
+            />
+            <button data-submit-search>Search</button>
+          </form>
+        </search>
+      </dialog>
+    </template>
+
+    <static-search data-resource-url="./data/index.json"></static-search>
+
+    <script src="static-search.js"></script>
   </body>
 </html>
