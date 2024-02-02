@@ -8,9 +8,11 @@ class StaticSearch extends HTMLElement {
     super();
 
     // default message for no search results found
-    this.noSearchResultsMessage = this.getAttribute(
+    this.noSearchResultsFoundMessage = this.getAttribute(
       'data-no-search-results-message'
-    );
+    )
+      ? this.getAttribute('data-no-search-results-message')
+      : 'No search results found.';
 
     this.attachShadow({ mode: 'open' });
 
@@ -176,22 +178,21 @@ class StaticSearch extends HTMLElement {
   };
 
   renderSearchResults = (newValue) => {
-    // parse json string into an array object
+    // parse json string
     let searchResults = JSON.parse(newValue);
 
     // get any previous search results container
     let previousSearchResults = this.shadowRoot.querySelector('ul');
 
-    // remove any previous search results
+    // remove any previous search results containers
     if (previousSearchResults) {
       previousSearchResults.remove();
-      // this.shadowRoot.removeChild(previousSearchResults);
     }
 
     // container for search results
     let ul = document.createElement('ul');
 
-    // add search provided by message to search results
+    // add brancd message to search results
     const searchProvidedBy = `<li id="search-provided-by-message"><a href="https://staticsearch.com" id="search-provided-by-message-link">Search by staticsearch.com</a></li>`;
     ul.innerHTML = searchProvidedBy;
 
@@ -207,6 +208,7 @@ class StaticSearch extends HTMLElement {
       // render no search results found message
       const message = `<li><p>${this.noSearchResultsFoundMessage}</p></li>`;
       content.innerHTML = message;
+      console.log(this.noSearchResultsFoundMessage);
     }
 
     ul.prepend(content);
