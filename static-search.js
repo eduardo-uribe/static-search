@@ -1,5 +1,4 @@
 class StaticSearch extends HTMLElement {
-  // names of all attributes for which the element need change notifications
   static get observedAttributes() {
     return ['data-search-results'];
   }
@@ -7,6 +6,7 @@ class StaticSearch extends HTMLElement {
   constructor() {
     super();
 
+    // RELOCATE THIS OR REMOVE?
     // default message for no search results found
     this.noSearchResultsFoundMessage = this.getAttribute(
       'data-no-search-results-message'
@@ -14,49 +14,27 @@ class StaticSearch extends HTMLElement {
       ? this.getAttribute('data-no-search-results-message')
       : 'No search results found.';
 
+    // attach shadow
     this.attachShadow({ mode: 'open' });
 
-    // this.shadowRoot.addEventListener('click', this.handleClick);
-
-    // listen to search form submitions
+    // event listeners
     this.shadowRoot.addEventListener('submit', this.formHandler);
+    this.shadowRoot.addEventListener('click', this.handleClick);
   }
 
+  /**
+   * connectedCallback
+   */
   async connectedCallback() {
-    // url of the resource we want to fetch
-    // const url = this.getAttribute('data-resource-url');
-    // index search data
-    // const index = await this.readIndexDB(url);
-    // shadow root
-
-    // search proxy template
-    const searchProxyTemplate = document
-      .querySelector('template[data-search-proxy]')
-      .content.cloneNode(true);
-
-    // dialog template
-    const dialogTemplate = document
-      .querySelector('[data-dialog]')
+    // static-search html template
+    const html = document
+      .querySelector('[data-static-search]')
       .content.cloneNode(true);
 
     // append template content into the shadow dom
-    this.shadowRoot.append(searchProxyTemplate, dialogTemplate);
-
-    // listen to clicks on the search proxy element
-    const searchProxy = this.shadowRoot.querySelector(
-      'search[data-search-proxy]'
-    );
-
-    // RELOCATE TO THE CONSTRUCTOR
-    const closeDialogButton =
-      this.shadowRoot.querySelector('[data-close-modal]');
-
-    // RELOCATE TO THE CONSTRUCTOR
-    searchProxy.addEventListener('click', this.openDialog);
-    closeDialogButton.addEventListener('click', this.closeDialog);
+    this.shadowRoot.append(html);
   }
 
-  // respond to changes in an attribute's value
   /**
    * attributeChangedCallback
    * callback called whenever an attribute whose name is listed in an element's observedAttributes property is added, modified, removed, or replaced
@@ -158,23 +136,25 @@ class StaticSearch extends HTMLElement {
     // index data that matches the search query
     let matches = this.searchForMatches(index, query);
 
-    // reassign the <static-search> attribute the matched data
+    // reassign the value of data-search-results attribute
     this.shadowRoot.host.setAttribute(
       'data-search-results',
       JSON.stringify(matches)
     );
   };
 
-  openDialog = (event) => {
-    // open dialog
+  handleClick = (event) => {
     const dialog = this.shadowRoot.querySelector('dialog');
-    dialog.showModal();
-  };
 
-  closeDialog = (event) => {
-    // close dialog
-    const dialog = this.shadowRoot.querySelector('dialog');
-    dialog.close();
+    if (event.target.matches('[data-close-modal]')) {
+      // close dialog model
+      dialog.close();
+    }
+
+    if (event.target.closest('[data-search-proxy]')) {
+      // open dialog model
+      dialog.showModal();
+    }
   };
 
   renderSearchResults = (newValue) => {
@@ -208,7 +188,6 @@ class StaticSearch extends HTMLElement {
       // render no search results found message
       const message = `<li><p>${this.noSearchResultsFoundMessage}</p></li>`;
       content.innerHTML = message;
-      console.log(this.noSearchResultsFoundMessage);
     }
 
     ul.prepend(content);

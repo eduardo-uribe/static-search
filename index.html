@@ -3,92 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="static-search.css" />
     <title>Search without server-side code or database.</title>
   </head>
   <body>
     <static-search data-resource-url="./data/index.json">
-      <template data-search-proxy>
-        <style></style>
+      <!-- <template data-search-proxy>
         <search data-search-proxy>
           <input type="text" placeholder="Search this website" />
-          <button type="button">Search</button>
+          <button>Search</button>
         </search>
-      </template>
-      <template data-dialog>
-        <style>
-          dialog {
-            border-radius: 6px;
-            border: solid 1px #eee;
-            width: 55ch;
-            margin-top: 10%;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont,
-              'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
-              'Helvetica Neue', sans-serif;
-          }
-
-          dialog::backdrop {
-            /* background-color: #efefef; */
-            backdrop-filter: blur(1px);
-          }
-
-          ul {
-            /* border: solid 2px black; */
-            list-style: none;
-            /* line-height: 1.5; */
-            /* margin: 1rem 0 0; */
-            padding: 0;
-            margin-bottom: 0;
-          }
-
-          ul ul {
-            border: solid 1px black;
-            border-radius: 2px;
-            line-height: 1.5;
-            max-height: 350px;
-            overflow: scroll;
-            padding: 0.5rem;
-          }
-
-          #search-provided-by-message {
-            margin-top: 0.5rem;
-            text-align: end;
-          }
-
-          section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 24px;
-          }
-
-          section h3 {
-            font-size: 16px;
-            font-weight: 400;
-            margin: 0;
-          }
-
-          button[data-close-modal] {
-            border: none;
-            background: none;
-            cursor: pointer;
-            text-decoration: underline;
-          }
-
-          form {
-            display: flex;
-            justify-content: space-between;
-            height: 50px;
-          }
-
-          form input {
-            width: 80%;
-            text-indent: 8px;
-          }
-
-          form button {
-            width: 18%;
-            font-size: 14px;
-          }
-        </style>
+      </template> -->
+      <template data-static-search>
+        <search data-search-proxy>
+          <input type="text" placeholder="Search this website" />
+          <button>Search</button>
+        </search>
         <dialog>
           <search data-search>
             <section>
@@ -110,6 +40,7 @@
         </dialog>
       </template>
     </static-search>
+
     <script src="static-search.js"></script>
   </body>
 </html>
