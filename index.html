@@ -7,39 +7,31 @@
     <title>Search without server-side code or database.</title>
   </head>
   <body>
-    <static-search data-resource-url="./data/index.json">
-      <!-- <template data-search-proxy>
-        <search data-search-proxy>
-          <input type="text" placeholder="Search this website" />
-          <button>Search</button>
+    <static-search search-index-url="./data/index.json">
+      <search data-search-proxy>
+        <input type="text" placeholder="Search this journal" />
+        <button>Search</button>
+      </search>
+
+      <dialog>
+        <search data-search>
+          <section>
+            <h3>Search this website</h3>
+            <button data-close-modal type="button">Close</button>
+          </section>
+          <form>
+            <input
+              autofocus
+              type="search"
+              placeholder="Search this journal"
+              required
+              aria-label="Search through this websites content."
+              data-search-input
+            />
+            <button data-submit-search>Search</button>
+          </form>
         </search>
-      </template> -->
-      <template data-static-search>
-        <search data-search-proxy>
-          <input type="text" placeholder="Search this website" />
-          <button>Search</button>
-        </search>
-        <dialog>
-          <search data-search>
-            <section>
-              <h3>Search this website</h3>
-              <button data-close-modal type="button">Close</button>
-            </section>
-            <form>
-              <input
-                autofocus
-                type="search"
-                placeholder="Search this website"
-                required
-                aria-label="Search throught this websites content."
-                data-search-input
-              />
-              <button data-submit-search>Search</button>
-            </form>
-          </search>
-        </dialog>
-      </template>
-    </static-search>
+      </dialog>
 
     <script src="static-search.js"></script>
   </body>

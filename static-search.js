@@ -6,52 +6,30 @@ class StaticSearch extends HTMLElement {
   constructor() {
     super();
 
-    // RELOCATE THIS OR REMOVE?
-    // default message for no search results found
-    this.noSearchResultsFoundMessage = this.getAttribute(
-      'data-no-search-results-message'
-    )
-      ? this.getAttribute('data-no-search-results-message')
-      : 'No search results found.';
-
-    // attach shadow
-    this.attachShadow({ mode: 'open' });
+    // properties
+    this.url = this.getAttribute('search-index-url');
 
     // event listeners
-    this.shadowRoot.addEventListener('submit', this.formHandler);
-    this.shadowRoot.addEventListener('click', this.handleClick);
-  }
-
-  /**
-   * connectedCallback
-   */
-  async connectedCallback() {
-    // static-search html template
-    const html = document
-      .querySelector('[data-static-search]')
-      .content.cloneNode(true);
-
-    // append template content into the shadow dom
-    this.shadowRoot.append(html);
+    this.addEventListener('submit', this.handleSubmit);
+    this.addEventListener('click', this.handleClick);
   }
 
   /**
    * attributeChangedCallback
-   * callback called whenever an attribute whose name is listed in an element's observedAttributes property is added, modified, removed, or replaced
-   * @param {String} name - name of the attribute which changed
-   * @param {*} oldValue - the attributes old value
-   * @param {*} newValue - the attributes new value
+   * callback called whenever an attribute whose name is listed in an element's
+   * observedAttributes property is added, modified, removed, or replaced
+   * @param { String } name - name of the attribute which changed
+   * @param { String } oldValue - the attributes old value
+   * @param { String } newValue - the attributes new value
    */
   attributeChangedCallback(name, oldValue, newValue) {
-    if (newValue === '') {
-      return;
-    }
+    if (newValue === '') return;
 
-    // render the search results
+    // render search results
     this.renderSearchResults(newValue);
   }
 
-  searchForMatches(index, query) {
+  search(index, query) {
     // store objects whose properties contain the query string
     let matches = index.filter(function (object) {
       for (let property in object) {
@@ -123,28 +101,25 @@ class StaticSearch extends HTMLElement {
     });
   }
 
-  formHandler = async (event) => {
+  async handleSubmit(event) {
     // prevent default behavior
     event.preventDefault();
 
     // search form query
-    let query = this.shadowRoot.querySelector('[data-search-input]').value;
+    let query = this.querySelector('[data-search-input]').value;
 
-    const url = this.getAttribute('data-resource-url');
-    const index = await this.readIndexDB(url);
+    // search index
+    const index = await this.readIndexDB(this.url);
 
     // index data that matches the search query
-    let matches = this.searchForMatches(index, query);
+    let matches = this.search(index, query);
 
     // reassign the value of data-search-results attribute
-    this.shadowRoot.host.setAttribute(
-      'data-search-results',
-      JSON.stringify(matches)
-    );
-  };
+    this.setAttribute('data-search-results', JSON.stringify(matches));
+  }
 
-  handleClick = (event) => {
-    const dialog = this.shadowRoot.querySelector('dialog');
+  handleClick(event) {
+    const dialog = this.querySelector('dialog');
 
     if (event.target.matches('[data-close-modal]')) {
       // close dialog model
@@ -155,14 +130,14 @@ class StaticSearch extends HTMLElement {
       // open dialog model
       dialog.showModal();
     }
-  };
+  }
 
-  renderSearchResults = (newValue) => {
+  renderSearchResults(newValue) {
     // parse json string
     let searchResults = JSON.parse(newValue);
 
     // get any previous search results container
-    let previousSearchResults = this.shadowRoot.querySelector('ul');
+    let previousSearchResults = this.querySelector('ul');
 
     // remove any previous search results containers
     if (previousSearchResults) {
@@ -186,15 +161,15 @@ class StaticSearch extends HTMLElement {
       content.innerHTML = list;
     } else {
       // render no search results found message
-      const message = `<li><p>${this.noSearchResultsFoundMessage}</p></li>`;
+      const message = `<li><p>No search results found.</p></li>`;
       content.innerHTML = message;
     }
 
     ul.prepend(content);
 
     // render search results to the shadow dom
-    this.shadowRoot.querySelector('[data-search]').append(ul);
-  };
+    this.querySelector('[data-search]').append(ul);
+  }
 
   listItemTemplate(object) {
     return `<li><a href=${object.url}>${object.title}</a></li>`;
