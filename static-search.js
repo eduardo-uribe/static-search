@@ -1,5 +1,4 @@
 class StaticSearch extends HTMLElement {
-  // names of all attributes for which the element need change notifications
   static get observedAttributes() {
     return ['data-search-results'];
   }
@@ -7,73 +6,28 @@ class StaticSearch extends HTMLElement {
   constructor() {
     super();
 
-    // default message for no search results found
-    this.noSearchResultsMessage = this.getAttribute(
-      'data-no-search-results-message'
-    );
+    // properties
+    this.url = this.getAttribute('url');
+    this.form = this.querySelector('form');
+    this.dialog = this.querySelector('dialog');
 
-    this.attachShadow({ mode: 'open' });
+    // brand message
+    this.brand = document.createElement('a');
+    this.brand.setAttribute('href', 'https://staticsearch.com');
+    this.brand.textContent = 'search provided by staticsearch.com';
 
-    // this.shadowRoot.addEventListener('click', this.handleClick);
-
-    // listen to search form submitions
-    this.shadowRoot.addEventListener('submit', this.formHandler);
+    // event listeners
+    this.addEventListener('submit', this.handleSubmit);
+    this.addEventListener('click', this.handleClick);
   }
 
-  async connectedCallback() {
-    // url of the resource we want to fetch
-    // const url = this.getAttribute('data-resource-url');
-    // index search data
-    // const index = await this.readIndexDB(url);
-    // shadow root
-
-    // search proxy template
-    const searchProxyTemplate = document
-      .querySelector('template[data-search-proxy]')
-      .content.cloneNode(true);
-
-    // dialog template
-    const dialogTemplate = document
-      .querySelector('[data-dialog]')
-      .content.cloneNode(true);
-
-    // append template content into the shadow dom
-    this.shadowRoot.append(searchProxyTemplate, dialogTemplate);
-
-    // listen to clicks on the search proxy element
-    const searchProxy = this.shadowRoot.querySelector(
-      'search[data-search-proxy]'
-    );
-
-    // RELOCATE TO THE CONSTRUCTOR
-    const closeDialogButton =
-      this.shadowRoot.querySelector('[data-close-modal]');
-
-    // RELOCATE TO THE CONSTRUCTOR
-    searchProxy.addEventListener('click', this.openDialog);
-    closeDialogButton.addEventListener('click', this.closeDialog);
-  }
-
-  // respond to changes in an attribute's value
-  /**
-   * attributeChangedCallback
-   * callback called whenever an attribute whose name is listed in an element's observedAttributes property is added, modified, removed, or replaced
-   * @param {String} name - name of the attribute which changed
-   * @param {*} oldValue - the attributes old value
-   * @param {*} newValue - the attributes new value
-   */
   attributeChangedCallback(name, oldValue, newValue) {
-    if (newValue === '') {
-      return;
-    }
-
-    // render the search results
-    this.renderSearchResults(newValue);
+    if (newValue === '') return;
+    this.render(JSON.parse(newValue));
   }
 
-  searchForMatches(index, query) {
-    // store objects whose properties contain the query string
-    let matches = index.filter(function (object) {
+  search(index, query) {
+    const matches = index.filter(function (object) {
       for (let property in object) {
         if (object[property].includes(query)) {
           return true;
@@ -84,138 +38,107 @@ class StaticSearch extends HTMLElement {
     return matches;
   }
 
-  async readIndexDB(url) {
+  async handleSubmit(event) {
+    event.preventDefault();
+
+    try {
+      const searchquery = this.querySelector('[data-search-input]').value;
+      const searchindex = await this.getIndex(this.url);
+      const searchmatches = this.search(searchindex, searchquery);
+
+      this.setAttribute('data-search-results', JSON.stringify(searchmatches));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  handleClick(event) {
+    if (event.target.matches('[data-close-modal]')) {
+      this.dialog.close();
+      this.form.reset();
+
+      // remove any search results
+      if (this.querySelector('ul')) this.querySelector('ul').remove();
+      if (this.querySelector('a')) this.querySelector('a').remove();
+    }
+
+    if (event.target.closest('[data-search-proxy]')) {
+      this.dialog.showModal();
+    }
+  }
+
+  async getIndex(url) {
     return new Promise(function (resolve, reject) {
-      // request to open database
-      let openDatabaseRequest = indexedDB.open('staticsearch', 1);
+      const opendatabase = indexedDB.open('TestDatabase', 1);
 
-      openDatabaseRequest.onsuccess = function (event) {
-        // idbdatabase interface
-        let database = event.target.result;
-        let transaction = database.transaction('index', 'readonly');
-        let store = transaction.objectStore('index');
+      opendatabase.onerror = function (event) {
+        reject(event.target.errorCode);
+      };
 
-        // request index object store data
-        let request = store.getAll();
+      opendatabase.onsuccess = function (event) {
+        const database = event.target.result;
 
-        request.onerror = function (event) {
-          console.log(event.target.errorCode);
+        // catch all error handler
+        database.onerror = function (event) {
+          console.log(`database error: ${event.target.errorCode}`);
         };
 
-        request.onsuccess = async function (event) {
-          // the search index
-          let index = event.target.result;
+        const transaction = database.transaction(['index']);
+        const store = transaction.objectStore('index');
+        const indexrequest = store.getAll();
+
+        indexrequest.onsuccess = function (event) {
+          const index = event.target.result;
           resolve(index);
         };
       };
 
-      openDatabaseRequest.onupgradeneeded = function (event) {
-        // save the idbdatabase interface
-        let database = event.target.result;
+      opendatabase.onupgradeneeded = function (event) {
+        // indexdb database interface
+        const database = event.target.result;
 
-        // create an object store for this database
-        let store = database.createObjectStore('index', {
+        // create indexdb store
+        const store = database.createObjectStore('index', {
           autoIncrement: true,
         });
 
-        // use transaction oncomplete to make sure the object store creation is finished before adding data into it
+        // add data to the store
         store.transaction.oncomplete = async function (event) {
-          // fetch the index data to store in indexeddb
-          let request = await fetch(url);
-          let index = await request.json();
+          const request = await fetch(url);
+          const searchdata = await request.json();
 
-          // store values in the newly created object store
-          let transaction = database.transaction('index', 'readwrite');
-          let store = transaction.objectStore('index');
+          const index = database
+            .transaction('index', 'readwrite')
+            .objectStore('index');
 
-          // save the index data to the store
-          index.forEach(function (object) {
-            store.add(object);
+          searchdata.forEach(function (object) {
+            index.add(object);
           });
         };
-      };
-
-      openDatabaseRequest.onerror = function (event) {
-        // do something with openDatabaseRequest.errorCode
-        // console.error( event.target.errorCode );
-        reject(event.target.errorCode);
       };
     });
   }
 
-  formHandler = async (event) => {
-    // prevent default behavior
-    event.preventDefault();
-
-    // search form query
-    let query = this.shadowRoot.querySelector('[data-search-input]').value;
-
-    const url = this.getAttribute('data-resource-url');
-    const index = await this.readIndexDB(url);
-
-    // index data that matches the search query
-    let matches = this.searchForMatches(index, query);
-
-    // reassign the <static-search> attribute the matched data
-    this.shadowRoot.host.setAttribute(
-      'data-search-results',
-      JSON.stringify(matches)
-    );
-  };
-
-  openDialog = (event) => {
-    // open dialog
-    const dialog = this.shadowRoot.querySelector('dialog');
-    dialog.showModal();
-  };
-
-  closeDialog = (event) => {
-    // close dialog
-    const dialog = this.shadowRoot.querySelector('dialog');
-    dialog.close();
-  };
-
-  renderSearchResults = (newValue) => {
-    // parse json string into an array object
-    let searchResults = JSON.parse(newValue);
-
-    // get any previous search results container
-    let previousSearchResults = this.shadowRoot.querySelector('ul');
-
+  render(matches) {
     // remove any previous search results
-    if (previousSearchResults) {
-      previousSearchResults.remove();
-      // this.shadowRoot.removeChild(previousSearchResults);
-    }
+    if (this.querySelector('ul')) this.querySelector('ul').remove();
+    if (this.querySelector('a')) this.querySelector('a').remove();
 
-    // container for search results
-    let ul = document.createElement('ul');
+    // new search results container
+    const searchresults = document.createElement('ul');
+    const listitems = matches.map(this.template, this).join('');
 
-    // add search provided by message to search results
-    const searchProvidedBy = `<li id="search-provided-by-message"><a href="https://staticsearch.com" id="search-provided-by-message-link">Search by staticsearch.com</a></li>`;
-    ul.innerHTML = searchProvidedBy;
-
-    // search results unordered list
-    let content = document.createElement('ul');
-
-    // list of results
-    let list = searchResults.map(this.listItemTemplate, this).join('');
-
-    if (list.length > 0) {
-      content.innerHTML = list;
+    if (listitems.length === 0) {
+      searchresults.innerHTML = `<li><p>No search results found.</p></li>`;
     } else {
-      // render no search results found message
-      const message = `<li><p>${this.noSearchResultsFoundMessage}</p></li>`;
-      content.innerHTML = message;
+      searchresults.innerHTML = listitems;
     }
 
-    ul.prepend(content);
+    // render search results
+    this.querySelector('[data-search]').append(searchresults, this.brand);
+  }
 
-    // render search results to the shadow dom
-    this.shadowRoot.querySelector('[data-search]').append(ul);
-  };
-
-  listItemTemplate(object) {
+  template(object) {
     return `<li><a href=${object.url}>${object.title}</a></li>`;
   }
 }
