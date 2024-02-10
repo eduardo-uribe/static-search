@@ -8,31 +8,22 @@ dialog {
 }
 
 dialog::backdrop {
-  /* background-color: #efefef; */
   backdrop-filter: blur(1px);
 }
 
 ul {
-  /* border: solid 2px black; */
   list-style: none;
-  /* line-height: 1.5; */
-  /* margin: 1rem 0 0; */
   padding: 0;
   margin-bottom: 0;
 }
 
-ul ul {
+ul {
   border: solid 1px black;
   border-radius: 2px;
   line-height: 1.5;
   max-height: 350px;
   overflow: scroll;
   padding: 0.5rem;
-}
-
-#search-provided-by-message {
-  margin-top: 0.5rem;
-  text-align: end;
 }
 
 section {
