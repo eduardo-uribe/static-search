@@ -26,6 +26,7 @@ class StaticSearch extends HTMLElement {
     this.render(JSON.parse(newValue));
   }
 
+  // helper methods
   search(index, query) {
     const matches = index.filter(function (object) {
       for (let property in object) {
@@ -138,6 +139,7 @@ class StaticSearch extends HTMLElement {
     this.querySelector('[data-search]').append(searchresults, this.brand);
   }
 
+  // customizable list item ui template
   template(object) {
     return `<li><a href=${object.url}>${object.title}</a></li>`;
   }
