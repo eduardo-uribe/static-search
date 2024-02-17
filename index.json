@@ -1,0 +1,86 @@
+[
+  {
+    "url": "/journal/eleventy-exclude-from-collections/",
+    "title": "How to exclude your index.html file from your post collections."
+  },
+  {
+    "url": "/journal/how-to-quit-browsersync/",
+    "title": "How to quit Browsersync from the terminal"
+  },
+  {
+    "url": "/journal/the-data-directory/",
+    "title": "The _data directory"
+  },
+  {
+    "url": "/journal/template-content/",
+    "title": "Learn how to display the full content of files inside your collection, on the home page."
+  },
+  {
+    "url": "/journal/syntax-highlighting/",
+    "title": "Enhance your code samples with the Eleventy Syntax Highlighting Plugin"
+  },
+  {
+    "url": "/journal/rename-your-directories/",
+    "title": "How to rename our input and output directories."
+  },
+  {
+    "url": "/journal/prism-treeview/",
+    "title": "Learn how to display a directory treeview with your 11ty syntax highlighter"
+  },
+  {
+    "url": "/journal/html-template-engine/",
+    "title": "htmlTemplateEngine"
+  },
+  {
+    "url": "/journal/addAllPagesToCollections/",
+    "title": "How to add our paginated pages to a collection."
+  },
+  {
+    "url": "/journal/multiple-front-matter-tags/",
+    "title": "Two ways we can set multiple &#39;tags&#39; in our front matter"
+  },
+  {
+    "url": "/journal/output-a-json-file-with-the-permalink-key/",
+    "title": "Output a .json file with the permalink key"
+  },
+  {
+    "url": "/journal/json-stringify-with-nunjucks-dump-filter/",
+    "title": "JSON.stringify() with Nunjucks built-in &quot;dump&quot; filter"
+  },
+  {
+    "url": "/journal/how-to-output-files-ignored-by-eleventy/",
+    "title": "How to output files ignored by Eleventy"
+  },
+  {
+    "url": "/journal/add-watch-target/",
+    "title": "Adding our own &quot;watch targets&quot;"
+  },
+  {
+    "url": "/journal/eleventyignore/",
+    "title": "How to ignore files or directories from being processed into our output directory"
+  },
+  {
+    "url": "/journal/set-template-formats/",
+    "title": "Passthrough by file extension"
+  },
+  {
+    "url": "/journal/add-collection/",
+    "title": "How to create our own &quot;custom&quot; collections"
+  },
+  {
+    "url": "/journal/data-directory/",
+    "title": "Renaming our directory for global data files"
+  },
+  {
+    "url": "/journal/nunjucks-safe-filter/",
+    "title": "Nunjucks built-in safe filter"
+  },
+  {
+    "url": "/journal/nunjucks-filter-tag/",
+    "title": "Nunjucks built-in filter block tag"
+  },
+  {
+    "url": "/journal/",
+    "title": ""
+  }
+]
